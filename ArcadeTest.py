@@ -86,7 +86,7 @@ class MyGame(arcade.Window):
         coordinate_list = [[512, 96],
                            [256, 96],
                            [768, 96],
-                           [1500, 0]]
+                           [1500, 96 * 2]]
 
         for coordinate in coordinate_list:
             # Add a crate on the ground
