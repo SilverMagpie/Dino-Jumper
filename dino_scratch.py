@@ -10,6 +10,11 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 800
 UPDATE_RATE = 1 / 60
 
+# Movement speed of player, in pixels per frame
+PLAYER_MOVEMENT_SPEED = 0
+GRAVITY = 1
+PLAYER_JUMP_SPEED = 30
+
 
 class Dino_Game(arcade.Window):
     #Acts as a controller. Determines how the game is played.
@@ -42,7 +47,7 @@ class Dino_Game(arcade.Window):
             if self.physics_engine.can_jump():
                 self.player_sprite.change_y = PLAYER_JUMP_SPEED
         
-        self.player_sprite.change_x = 0
+        self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
 
     # def on_key_release(self, key, modifiers):
         """Called when the user releases a key. """
