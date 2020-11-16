@@ -24,6 +24,45 @@ class Dino_Game(arcade.Window):
         self.update_rate = UPDATE_RATE
         self._background_color = (arcade.csscolor.CORNFLOWER_BLUE)
 
+    def on_draw(self):
+        """ Render the screen. """
+
+        # Clear the screen to the background color
+        arcade.start_render()
+
+        # Draw our sprites
+        self.wall_list.draw()
+        self.coin_list.draw()
+        self.player_list.draw()
+
+    def on_key_press(self, key, modifiers):
+        """Called whenever a key is pressed. """
+
+        if key == arcade.key.UP or key == arcade.key.W or key == arcade.key.SPACE:
+            if self.physics_engine.can_jump():
+                self.player_sprite.change_y = PLAYER_JUMP_SPEED
+        
+        self.player_sprite.change_x = 0
+
+    # def on_key_release(self, key, modifiers):
+        """Called when the user releases a key. """
+
+        '''if key == arcade.key.LEFT or key == arcade.key.A:
+            self.player_sprite.change_x = 0
+        elif key == arcade.key.RIGHT or key == arcade.key.D:
+            self.player_sprite.change_x = 0'''
+    
+    def on_update(self, delta_time):
+        """ Movement and game logic """
+
+        # Move the player with the physics engine
+        self.physics_engine.update()
+
+        # --- Manage Scrolling ---
+
+        # Track if we need to change the viewport
+
+        changed = False
 
 class Player():
     #Player class is responsible for creating the player.
