@@ -10,19 +10,9 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 800
 UPDATE_RATE = 1 / 60
 
-class dino_game():
-    #Acts as a controller. Determines how the game is played. 
-    def __init__(self):
 
-        self.display = Display()
-
-    def game_play():
-        pass
-
-
-
-
-class display(arcade.Window):
+class Dino_Game(arcade.Window):
+    #Acts as a controller. Determines how the game is played.
     #Sets up the screen
     def __init__(self):
         super().__init__()
@@ -35,27 +25,27 @@ class display(arcade.Window):
         self._background_color = (arcade.csscolor.CORNFLOWER_BLUE)
 
 
-class player():
+class Player():
     #Player class is responsible for creating the player.
     pass
 
 
-class ground(arcade.Sprite):
+class Ground(arcade.Sprite):
     #Creates the gound and its location.
     def __init__(self):
         super().__init__("blackbox.png")
-        self._image = None
-        self.boundary_top = None
+        #self.boundary_top = None
         self.change_x = GAME_SPEED
         self.change_y = 0
-        self.center_x = None
-        self.center_y = None
+        self.center_x = 10
+        self.center_y = 10
 
 
 
-class obstacle():
+class Obstacle():
     pass
 
 
 if __name__ == "__main__":
-    pass
+    dino_game = Dino_Game()
+    dino_game.game_play()
