@@ -6,7 +6,7 @@ import arcade
 # Constants
 SCREEN_WIDTH = 1080
 SCREEN_HEIGHT = 900
-SCREEN_TITLE = "Platformer"
+SCREEN_TITLE = "Dino Demo"
 
 # Constants used to scale our sprites from their original size
 CHARACTER_SCALING = 0.5
@@ -49,7 +49,7 @@ class MyGame(arcade.Window):
         self.physics_engine = None
 
         # Used to keep track of our scrolling
-        self.view_bottom = 0
+        self.view_bottom = 45
         self.view_left = 0
 
         arcade.set_background_color(arcade.csscolor.CORNFLOWER_BLUE)
