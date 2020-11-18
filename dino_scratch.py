@@ -3,9 +3,11 @@
 # obstacles as they approach the player. Hit any obstacle and you are dead.
 
 import arcade
+import random
 
 #Game constant variables. 
-GAME_SPEED = -5
+LUCK = 15
+GAME_SPEED = 0
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 800
 UPDATE_RATE = 1 / 60
@@ -16,7 +18,7 @@ BOTTOM_VIEWPORT_MARGIN = 50
 TOP_VIEWPORT_MARGIN = 100
 
 # Movement speed of player, in pixels per frame
-PLAYER_MOVEMENT_SPEED = 0
+PLAYER_MOVEMENT_SPEED = 8
 PLAYER_JUMP_SPEED = 30
 
 
@@ -45,6 +47,15 @@ class Dino_Game(arcade.Window):
             wall.set_position(x, 32)
             self.wall_list.append(wall)
 
+        
+        x = 0
+        for i in range(50):
+            x += random.randint(50, 250)
+            #create_obstacle = random.randint()
+            obstacle = Obstacle()
+            obstacle.set_position(x, 32 + 50)
+            self.wall_list.append(obstacle)
+
         self.player_list = arcade.SpriteList() #TODO: Create a class for this
         self.player_list.append(self.player_sprite)
 
@@ -65,12 +76,12 @@ class Dino_Game(arcade.Window):
 
     def on_key_press(self, key, modifiers):
         """Called whenever a key is pressed. """
-
+        
+        
         if key == arcade.key.UP or key == arcade.key.W or key == arcade.key.SPACE:
             if self.physics_engine.can_jump():
                 self.player_sprite.jump(PLAYER_JUMP_SPEED)
         
-        #self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
 
     # def on_key_release(self, key, modifiers):
         """Called when the user releases a key. """
@@ -83,14 +94,16 @@ class Dino_Game(arcade.Window):
     def on_update(self, delta_time):
         """ Movement and game logic """
 
+        self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
+
         # Move the player with the physics engine
         self.physics_engine.update()
 
-        # --- Manage Scrolling ---
+        # # --- Manage Scrolling ---
 
-        # Track if we need to change the viewport
+        # # Track if we need to change the viewport
 
-        changed = False
+        changed = True
 
         # Scroll left
         left_boundary = self.view_left + LEFT_VIEWPORT_MARGIN
@@ -137,7 +150,7 @@ class Player(arcade.Sprite):
     #Player class is responsible for creating the player.
     
     def __init__(self):
-        super().__init__("blackbox.png")
+        super().__init__("redbox.png")
 
         self.change_x = 0
         self.change_y = 0
@@ -169,8 +182,18 @@ class Ground(arcade.Sprite):
 
 
 
-class Obstacle():
-    pass
+class Obstacle(arcade.Sprite):
+    def __init__(self):
+        super().__init__("obstacle.png")
+        #self.boundary_top = None
+        self.change_x = GAME_SPEED
+        self.change_y = 0
+        self.center_x = 10
+        self.center_y = 10
+
+    def set_position(self, location_x, location_y):
+        self.center_x = location_x
+        self.center_y = location_y
 
 
 if __name__ == "__main__":
