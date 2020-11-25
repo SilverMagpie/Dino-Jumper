@@ -9,7 +9,7 @@ import random
 LUCK = 15
 GAME_SPEED = 0
 SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 800
+SCREEN_HEIGHT = 600
 UPDATE_RATE = 1 / 60
 GRAVITY = 1
 LEFT_VIEWPORT_MARGIN = 250
@@ -53,7 +53,7 @@ class Dino_Game(arcade.Window):
             x += random.randint(50, 250)
             #create_obstacle = random.randint()
             obstacle = Obstacle()
-            obstacle.set_position(x, 32 + 50)
+            obstacle.set_position(x, 32 + 38)
             self.wall_list.append(obstacle)
 
         self.player_list = arcade.SpriteList() #TODO: Create a class for this
