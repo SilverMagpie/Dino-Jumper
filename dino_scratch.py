@@ -13,14 +13,14 @@ SCREEN_HEIGHT = 500
 UPDATE_RATE = 1 / 60
 GRAVITY = 1
 LEFT_VIEWPORT_MARGIN = 250
-RIGHT_VIEWPORT_MARGIN = 1000 - 249
+RIGHT_VIEWPORT_MARGIN = SCREEN_WIDTH - LEFT_VIEWPORT_MARGIN + 1
 BOTTOM_VIEWPORT_MARGIN = 50
 TOP_VIEWPORT_MARGIN = 100
 NUM_LIVES = 5
 
 # Movement speed of player, in pixels per frame
 PLAYER_MOVEMENT_SPEED = 12
-PLAYER_JUMP_SPEED = 25
+PLAYER_JUMP_SPEED = 20
 
 
 class Dino_Game(arcade.Window):
@@ -45,7 +45,7 @@ class Dino_Game(arcade.Window):
 
         # Create the ground
         # This shows using a loop to place multiple sprites horizontally
-        for x in range(0, 1500, 25):
+        for x in range(0, 1000, 25):
             wall = Ground()
             wall.set_position(x, 32)
             self.wall_list.append(wall)
@@ -53,7 +53,7 @@ class Dino_Game(arcade.Window):
         
         x = 0
         for i in range(50):
-            x += random.randint(50, 250)
+            x += random.randint(250, 400)
             #create_obstacle = random.randint()
             obstacle = Obstacle()
             obstacle.set_position(x, 32 + random.randint(38, 150))
@@ -111,10 +111,13 @@ class Dino_Game(arcade.Window):
 
 
         if self.count_collisions >= NUM_LIVES:
-            self._background_color = (arcade.csscolor.RED)
+            self._background_color = (arcade.csscolor.ORANGE)
             #arcade.pause(5)
             print("You LOSE!")
             arcade.close_window()
+
+                 
+
 
 
         self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
@@ -164,6 +167,32 @@ class Dino_Game(arcade.Window):
                                 self.view_bottom,
                                 SCREEN_HEIGHT + self.view_bottom)
 
+        # Adds obstacles and deletes them as they leave the screen.
+        for i in range(len(self.obstacle_list)):
+            if self.obstacle_list[i].get_x_position() < self.view_left:
+                self.obstacle_list.pop(i)
+                new_obstacle = Obstacle()
+                new_x_position = self.obstacle_list[-1].get_x_position() + random.randint(250,350)
+                new_obstacle.set_position(new_x_position, 32 + random.randint(38, 150))
+                self.obstacle_list.append(new_obstacle)
+                print("I am adding obstacles")
+
+        # Adds ground and deletes them as they leave the screen.
+        for i in range(len(self.wall_list)):
+            if self.wall_list[i].get_x_position() < self.view_left:
+                self.wall_list.pop(i)
+                new_wall = Ground()
+                new_wall.set_position(self.wall_list[-1].get_x_position() + 25, 32)
+                self.wall_list.append(new_wall)
+                print("I am adding ground")
+
+        
+        
+                
+
+
+
+
 class Player(arcade.Sprite):
     #Player class is responsible for creating the player.
     
@@ -208,6 +237,8 @@ class Ground(arcade.Sprite):
         if self.center_x < 0:
             self.remove_from_sprite_lists()
 
+    def get_x_position(self):
+        return self.center_x
 
 
 class Obstacle(arcade.Sprite):
@@ -232,6 +263,10 @@ class Obstacle(arcade.Sprite):
 
         if self.center_x < 0:
             self.remove_from_sprite_lists()
+
+    def get_x_position(self):
+        return self.center_x
+
 
 
 if __name__ == "__main__":
