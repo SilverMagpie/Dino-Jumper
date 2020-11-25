@@ -114,7 +114,7 @@ class Dino_Game(arcade.Window):
             self._background_color = (arcade.csscolor.ORANGE)
             #arcade.pause(5)
             print("You LOSE!")
-            arcade.close_window()
+            #arcade.close_window()
 
                  
 
@@ -186,11 +186,6 @@ class Dino_Game(arcade.Window):
                 new_wall.set_position(self.wall_list[-1].get_x_position() + 25, 32)
                 self.wall_list.append(new_wall)
                 print("I am adding ground")
-
-        
-        
-                
-
 
 
 
