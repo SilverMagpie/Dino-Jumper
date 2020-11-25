@@ -4,8 +4,8 @@ Platformer Game
 import arcade
 
 # Constants
-SCREEN_WIDTH = 1080
-SCREEN_HEIGHT = 900
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
 SCREEN_TITLE = "Dino Demo"
 
 # Constants used to scale our sprites from their original size
@@ -16,7 +16,7 @@ COIN_SCALING = 0.5
 # Movement speed of player, in pixels per frame
 PLAYER_MOVEMENT_SPEED = 8
 GRAVITY = 1
-PLAYER_JUMP_SPEED = 30
+PLAYER_JUMP_SPEED = 18
 
 # How many pixels to keep as a minimum margin between the character
 # and the edge of the screen.
