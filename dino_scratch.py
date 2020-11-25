@@ -116,6 +116,7 @@ class Dino_Game(arcade.Window):
             print("You LOSE!")
             arcade.close_window()
 
+        #print(f"Num obstacles remaining: {len(obstacle_list)}")
 
         self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
 
