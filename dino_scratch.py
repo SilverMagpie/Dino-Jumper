@@ -4,6 +4,7 @@
 
 import arcade
 import random
+import time
 
 #Game constant variables. 
 LUCK = 4
@@ -20,7 +21,7 @@ NUM_LIVES = 5
 
 # Movement speed of player, in pixels per frame
 PLAYER_MOVEMENT_SPEED = 12
-PLAYER_JUMP_SPEED = 20
+PLAYER_JUMP_SPEED = 18
 
 
 class Dino_Game(arcade.Window):
@@ -52,7 +53,7 @@ class Dino_Game(arcade.Window):
 
         
         x = 0
-        for i in range(50):
+        for i in range(6):
             x += random.randint(250, 400)
             #create_obstacle = random.randint()
             obstacle = Obstacle()
@@ -113,7 +114,7 @@ class Dino_Game(arcade.Window):
         if self.count_collisions >= NUM_LIVES:
             self._background_color = (arcade.csscolor.ORANGE)
             #arcade.pause(5)
-            print("You LOSE!")
+            #print("You LOSE!")
             #arcade.close_window()
 
                  
@@ -173,19 +174,29 @@ class Dino_Game(arcade.Window):
             if self.obstacle_list[i].get_x_position() < self.view_left:
                 self.obstacle_list.pop(i)
                 new_obstacle = Obstacle()
-                new_x_position = self.obstacle_list[-1].get_x_position() + random.randint(250,350)
-                new_obstacle.set_position(new_x_position, 32 + random.randint(38, 150))
+                new_x_position = self.obstacle_list[-1].get_x_position() + random.randint(300, 400)
+                new_y_position = self.wall_list[-1].get_y_position() + random.randint(33, 175)
+                new_obstacle.set_position(new_x_position, new_y_position)
                 self.obstacle_list.append(new_obstacle)
-                print("I am adding obstacles")
+                #print("I am adding obstacles")
 
         # Adds ground and deletes them as they leave the screen.
         for i in range(len(self.wall_list)):
             if self.wall_list[i].get_x_position() < self.view_left:
                 self.wall_list.pop(i)
                 new_wall = Ground()
-                new_wall.set_position(self.wall_list[-1].get_x_position() + 25, 32)
+
+                if time.time() % 7 == 0:
+                    direction = -1
+                else:
+                    direction = 1
+                
+                offset = direction * int(random.randint(0, 500) % LUCK == 0)
+                x_pos = self.wall_list[-1].get_x_position() + 25
+                y_pos = self.wall_list[-1].get_y_position() + offset
+                new_wall.set_position(x_pos, y_pos)
                 self.wall_list.append(new_wall)
-                print("I am adding ground")
+                #print("I am adding ground")
 
 
 
@@ -235,6 +246,9 @@ class Ground(arcade.Sprite):
 
     def get_x_position(self):
         return self.center_x
+
+    def get_y_position(self):
+        return self.center_y
 
 
 class Obstacle(arcade.Sprite):
