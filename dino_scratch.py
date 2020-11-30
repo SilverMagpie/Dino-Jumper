@@ -18,6 +18,7 @@ RIGHT_VIEWPORT_MARGIN = SCREEN_WIDTH - LEFT_VIEWPORT_MARGIN + 1
 BOTTOM_VIEWPORT_MARGIN = 50
 TOP_VIEWPORT_MARGIN = 100
 NUM_LIVES = 5
+PLAYER_START = 0
 
 # Movement speed of player, in pixels per frame
 PLAYER_MOVEMENT_SPEED = 12
@@ -33,6 +34,8 @@ class Dino_Game(arcade.Window):
         self.view_bottom = 0
         self.view_left = 0
         self.count_collisions = 0
+        self._direction = 1
+        self.score = 0
 
         self.wall_list = arcade.SpriteList() #TODO: Create a class for this
         self.obstacle_list = arcade.SpriteList() #TODO: Create a class for this
@@ -76,6 +79,20 @@ class Dino_Game(arcade.Window):
         self.obstacle_list.draw()
         self.player_list.draw()
 
+        if self.player_sprite.get_lives() == 0:
+            arcade.draw_text("YOU LOSE!", SCREEN_WIDTH / 3 + self.view_left, SCREEN_HEIGHT / 3 + self.view_bottom, arcade.csscolor.RED, 75)
+        
+        else:
+            self.score = self.player_sprite.get_score()
+
+        score_text = f"Score: {self.score}"
+        life_text = f"Lives: {self.player_sprite.get_lives()}"
+        arcade.draw_text(score_text, 10 + self.view_left, 10 + self.view_bottom,
+                         arcade.csscolor.BLACK, 18)
+
+        arcade.draw_text(life_text, 10 + self.view_left, 40 + self.view_bottom,
+                         arcade.csscolor.BLACK, 18)
+
     def on_key_press(self, key, modifiers):
         """Called whenever a key is pressed. """
         
@@ -104,14 +121,19 @@ class Dino_Game(arcade.Window):
         for obstacle in obstacle_hits:
             # Remove the coin
             obstacle.remove_from_sprite_lists()
+            new_obstacle = Obstacle()
+            new_x_position = self.obstacle_list[-1].get_x_position() + random.randint(300, 400)
+            new_y_position = self.wall_list[-1].get_y_position() + random.randint(33, 175)
+            new_obstacle.set_position(new_x_position, new_y_position)
+            self.obstacle_list.append(new_obstacle)
             # Play a sound
             #arcade.play_sound(self.collect_coin_sound)
 
-        if len(obstacle_hits) > 0:
-            self.count_collisions += 1
+        if len(obstacle_hits) > 0 and self.player_sprite.get_lives() > 0:
+            self.player_sprite.subtract_life()
 
 
-        if self.count_collisions >= NUM_LIVES:
+        if self.player_sprite.get_lives() == 0:
             self._background_color = (arcade.csscolor.ORANGE)
             #arcade.pause(5)
             #print("You LOSE!")
@@ -186,12 +208,12 @@ class Dino_Game(arcade.Window):
                 self.wall_list.pop(i)
                 new_wall = Ground()
 
-                if time.time() % 7 == 0:
-                    direction = -1
-                else:
-                    direction = 1
+                if time.time() % 15 == 0:
+                    self._direction = self._direction * -1
+
+                #print(f"Direction is {self._direction}")
                 
-                offset = direction * int(random.randint(0, 500) % LUCK == 0)
+                offset = self._direction * int(random.randint(0, 500) % LUCK == 0)
                 x_pos = self.wall_list[-1].get_x_position() + 25
                 y_pos = self.wall_list[-1].get_y_position() + offset
                 new_wall.set_position(x_pos, y_pos)
@@ -208,8 +230,9 @@ class Player(arcade.Sprite):
 
         self.change_x = 0
         self.change_y = 0
-        self.center_x = 75
+        self.center_x = PLAYER_START
         self.center_y = 100
+        self._life_count = NUM_LIVES
 
     def set_position(self, location_x, location_y):
         self.center_x = location_x
@@ -217,6 +240,15 @@ class Player(arcade.Sprite):
 
     def jump(self, jump_speed):
         self.change_y = jump_speed
+
+    def get_lives(self):
+        return self._life_count
+
+    def subtract_life(self):
+        self._life_count -= 1
+
+    def get_score(self):
+        return int((self.center_x - PLAYER_START) / 4)
 
 
 
