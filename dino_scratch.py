@@ -36,6 +36,7 @@ class Dino_Game(arcade.Window):
         self.count_collisions = 0
         self._direction = 1
         self.score = 0
+        self.reference_time = int(time.time())
 
         self.wall_list = arcade.SpriteList() #TODO: Create a class for this
         self.obstacle_list = arcade.SpriteList() #TODO: Create a class for this
@@ -208,14 +209,19 @@ class Dino_Game(arcade.Window):
                 self.wall_list.pop(i)
                 new_wall = Ground()
 
-                if time.time() % 15 == 0:
-                    self._direction = self._direction * -1
+                ping = int(time.time())
 
-                #print(f"Direction is {self._direction}")
+                if ping - self.reference_time == 17:
+                    self._direction = self._direction * -1
+                    self.reference_time = ping
+
+                magnitude = random.randint(1, 2)
                 
-                offset = self._direction * int(random.randint(0, 500) % LUCK == 0)
+                offset = self._direction * int(random.randint(0, 10) % LUCK == 0) * magnitude
+
                 x_pos = self.wall_list[-1].get_x_position() + 25
                 y_pos = self.wall_list[-1].get_y_position() + offset
+
                 new_wall.set_position(x_pos, y_pos)
                 self.wall_list.append(new_wall)
                 #print("I am adding ground")
