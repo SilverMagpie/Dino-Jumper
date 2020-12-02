@@ -81,7 +81,7 @@ class Dino_Game(arcade.Window):
         self.player_list.draw()
 
         if self.player_sprite.get_lives() == 0:
-            arcade.draw_text("YOU LOSE!", SCREEN_WIDTH / 3 + self.view_left, SCREEN_HEIGHT / 3 + self.view_bottom, arcade.csscolor.RED, 75)
+            arcade.draw_text("YOU LOSE!", SCREEN_WIDTH / 2 + self.view_left, SCREEN_HEIGHT / 2 + self.view_bottom, arcade.csscolor.RED, 75, width=500, align="center")
         
         else:
             self.score = self.player_sprite.get_score()
@@ -261,7 +261,7 @@ class Player(arcade.Sprite):
 class Ground(arcade.Sprite):
     #Creates the gound and its location.
     def __init__(self):
-        super().__init__("blackbox.png")
+        super().__init__("Ground.png")
         #self.boundary_top = None
         self.change_x = GAME_SPEED
         self.change_y = 0
@@ -275,12 +275,6 @@ class Ground(arcade.Sprite):
 
     def get_id(self):
         return self._id
-
-    def update(self):
-        super().update()
-
-        if self.center_x < 0:
-            self.remove_from_sprite_lists()
 
     def get_x_position(self):
         return self.center_x
@@ -306,15 +300,29 @@ class Obstacle(arcade.Sprite):
     def get_id(self):
         return self._id
 
-    def update(self):
-        super().update()
-
-        if self.center_x < 0:
-            self.remove_from_sprite_lists()
-
     def get_x_position(self):
         return self.center_x
 
+
+class Power_Up(arcade.Sprite):
+    def __init__(self):
+        super().__init__("Life.png")
+        #self.boundary_top = None
+        self.change_x = GAME_SPEED
+        self.change_y = 0
+        self.center_x = 10
+        self.center_y = 10
+        self._id = 2
+
+    def set_position(self, location_x, location_y):
+        self.center_x = location_x
+        self.center_y = location_y
+
+    def get_id(self):
+        return self._id
+
+    def get_x_position(self):
+        return self.center_x
 
 
 if __name__ == "__main__":
