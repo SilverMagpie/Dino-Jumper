@@ -17,7 +17,7 @@ LEFT_VIEWPORT_MARGIN = 250
 RIGHT_VIEWPORT_MARGIN = SCREEN_WIDTH - LEFT_VIEWPORT_MARGIN + 1
 BOTTOM_VIEWPORT_MARGIN = 50
 TOP_VIEWPORT_MARGIN = 100
-NUM_LIVES = 5
+NUM_LIVES = 20
 PLAYER_START = 0
 
 # Movement speed of player, in pixels per frame
@@ -37,10 +37,11 @@ class Dino_Game(arcade.Window):
         self._direction = 1
         self.score = 0
         self.reference_time = int(time.time())
+        self.reference_time2 = int(time.time())
 
         self.wall_list = arcade.SpriteList() #TODO: Create a class for this
         self.obstacle_list = arcade.SpriteList() #TODO: Create a class for this
-        #self.ground = Ground()
+        self.power_up_list = arcade.SpriteList()
         self.player_sprite = Player()
         self.width = SCREEN_WIDTH
         self.height = SCREEN_HEIGHT
@@ -79,6 +80,7 @@ class Dino_Game(arcade.Window):
         self.wall_list.draw()
         self.obstacle_list.draw()
         self.player_list.draw()
+        self.power_up_list.draw()
 
         if self.player_sprite.get_lives() == 0:
             arcade.draw_text("YOU LOSE!", SCREEN_WIDTH / 2 + self.view_left, SCREEN_HEIGHT / 2 + self.view_bottom, arcade.csscolor.RED, 75, width=500, align="center")
@@ -140,8 +142,19 @@ class Dino_Game(arcade.Window):
             #print("You LOSE!")
             #arcade.close_window()
 
-                 
+        
+        power_ups_collected = arcade.check_for_collision_with_list(self.player_sprite, self.power_up_list)
 
+        for power_up in power_ups_collected:
+            # Remove the coin
+            power_up.remove_from_sprite_lists()
+            if power_up.get_id() == 2 and self.player_sprite.get_lives() > 0:
+                self.player_sprite.add_life(random.randint(1, 3))
+            elif power_up.get_id() == 3:
+                self.player_sprite.add_bonus(1000)
+
+            # Play a sound
+            #arcade.play_sound(self.collect_coin_sound)
 
         #print(f"Num obstacles remaining: {len(obstacle_list)}")
 
@@ -198,10 +211,12 @@ class Dino_Game(arcade.Window):
                 self.obstacle_list.pop(i)
                 new_obstacle = Obstacle()
                 new_x_position = self.obstacle_list[-1].get_x_position() + random.randint(300, 400)
-                new_y_position = self.wall_list[-1].get_y_position() + random.randint(33, 175)
+                new_y_position = self.wall_list[-1].get_y_position() + random.randint(45, 150)
                 new_obstacle.set_position(new_x_position, new_y_position)
                 self.obstacle_list.append(new_obstacle)
                 #print("I am adding obstacles")
+
+        
 
         # Adds ground and deletes them as they leave the screen.
         for i in range(len(self.wall_list)):
@@ -209,11 +224,11 @@ class Dino_Game(arcade.Window):
                 self.wall_list.pop(i)
                 new_wall = Ground()
 
-                ping = int(time.time())
+                ping1 = int(time.time())
 
-                if ping - self.reference_time == 17:
+                if ping1 - self.reference_time == 17:
                     self._direction = self._direction * -1
-                    self.reference_time = ping
+                    self.reference_time = ping1
 
                 magnitude = random.randint(1, 2)
                 
@@ -225,6 +240,17 @@ class Dino_Game(arcade.Window):
                 new_wall.set_position(x_pos, y_pos)
                 self.wall_list.append(new_wall)
                 #print("I am adding ground")
+
+        ping2 = int(time.time())
+
+        if ping2 - self.reference_time2 == (2 * LUCK):
+            power_up_id = random.randint(2, 3)
+            image_names = ["Life.png", "Coin.png"]
+            power_up = Power_Up(power_up_id, image_names[power_up_id - 2])
+            altitude = self.wall_list[-1].get_y_position() + random.randint(35, 70)
+            power_up.set_position(self.wall_list[-1].get_x_position(), altitude)
+            self.power_up_list.append(power_up)
+            self.reference_time2 = ping2
 
 
 
@@ -239,6 +265,7 @@ class Player(arcade.Sprite):
         self.center_x = PLAYER_START
         self.center_y = 100
         self._life_count = NUM_LIVES
+        self._score_bonus = 0
 
     def set_position(self, location_x, location_y):
         self.center_x = location_x
@@ -253,8 +280,14 @@ class Player(arcade.Sprite):
     def subtract_life(self):
         self._life_count -= 1
 
+    def add_life(self, added_life = 1):
+        self._life_count += added_life
+
+    def add_bonus(self, bonus = 0):
+        self._score_bonus += bonus
+
     def get_score(self):
-        return int((self.center_x - PLAYER_START) / 4)
+        return int((self.center_x - PLAYER_START) / 4) + self._score_bonus
 
 
 
@@ -305,14 +338,14 @@ class Obstacle(arcade.Sprite):
 
 
 class Power_Up(arcade.Sprite):
-    def __init__(self):
-        super().__init__("Life.png")
+    def __init__(self, item_id = 2, image_name_in = "obstacle.png"):
+        super().__init__(image_name_in)
         #self.boundary_top = None
         self.change_x = GAME_SPEED
         self.change_y = 0
         self.center_x = 10
         self.center_y = 10
-        self._id = 2
+        self._id = item_id
 
     def set_position(self, location_x, location_y):
         self.center_x = location_x
@@ -320,6 +353,9 @@ class Power_Up(arcade.Sprite):
 
     def get_id(self):
         return self._id
+
+    def set_id(self, new_id = 1):
+        self._id = new_id
 
     def get_x_position(self):
         return self.center_x
