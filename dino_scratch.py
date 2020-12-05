@@ -17,7 +17,7 @@ LEFT_VIEWPORT_MARGIN = 250
 RIGHT_VIEWPORT_MARGIN = SCREEN_WIDTH - LEFT_VIEWPORT_MARGIN + 1
 BOTTOM_VIEWPORT_MARGIN = 50
 TOP_VIEWPORT_MARGIN = 100
-NUM_LIVES = 20
+NUM_LIVES = 5
 PLAYER_START = 0
 
 # Movement speed of player, in pixels per frame
@@ -82,6 +82,13 @@ class Dino_Game(arcade.Window):
         self.player_list.draw()
         self.power_up_list.draw()
 
+
+        self.power_up_sounds = [arcade.load_sound("Sounds/power_up_01.ogg"),
+         arcade.load_sound("Sounds/power_up_02.ogg"), arcade.load_sound("Sounds/power_up_03.ogg")]
+        # self.background_sound = arcade.load_sound("Sounds/Dream_Raid_Part_III.mp3")
+        self.jump_sound = arcade.load_sound("Sounds/jump_2.ogg")
+        self.obstacle_sound = arcade.load_sound("Sounds/retro_explosion_01.ogg")
+
         if self.player_sprite.get_lives() == 0:
             arcade.draw_text("YOU LOSE!", SCREEN_WIDTH / 2 + self.view_left, SCREEN_HEIGHT / 2 + self.view_bottom, arcade.csscolor.RED, 75, width=500, align="center")
         
@@ -101,6 +108,7 @@ class Dino_Game(arcade.Window):
             [20*x + self.view_left+12,self.view_bottom+464],[20*x + self.view_left+15,self.view_bottom+464],[20*x + self.view_left+18,self.view_bottom+462],
             [20*x + self.view_left+19,self.view_bottom+459]], (255,0,0))
 
+        
 
     def on_key_press(self, key, modifiers):
         """Called whenever a key is pressed. """
@@ -109,6 +117,7 @@ class Dino_Game(arcade.Window):
         if key == arcade.key.UP or key == arcade.key.W or key == arcade.key.SPACE:
             if self.physics_engine.can_jump():
                 self.player_sprite.jump(PLAYER_JUMP_SPEED)
+                arcade.play_sound(self.jump_sound)
         
 
     # def on_key_release(self, key, modifiers):
@@ -121,6 +130,8 @@ class Dino_Game(arcade.Window):
 
     def on_update(self, delta_time):
         """ Movement and game logic """
+
+        
 
         obstacle_hits = arcade.check_for_collision_with_list(self.player_sprite, self.obstacle_list)
         # print(obstacle_hits)
@@ -135,8 +146,7 @@ class Dino_Game(arcade.Window):
             new_y_position = self.wall_list[-1].get_y_position() + random.randint(33, 175)
             new_obstacle.set_position(new_x_position, new_y_position)
             self.obstacle_list.append(new_obstacle)
-            # Play a sound
-            #arcade.play_sound(self.collect_coin_sound)
+            arcade.play_sound(self.obstacle_sound)
 
         if len(obstacle_hits) > 0 and self.player_sprite.get_lives() > 0:
             self.player_sprite.subtract_life()
@@ -158,6 +168,7 @@ class Dino_Game(arcade.Window):
                 self.player_sprite.add_life(random.randint(1, 3))
             elif power_up.get_id() == 3:
                 self.player_sprite.add_bonus(1000)
+            arcade.play_sound(self.power_up_sounds[random.randint(0,len(self.power_up_sounds) -1 )])
 
             # Play a sound
             #arcade.play_sound(self.collect_coin_sound)
@@ -246,6 +257,7 @@ class Dino_Game(arcade.Window):
                 new_wall.set_position(x_pos, y_pos)
                 self.wall_list.append(new_wall)
                 #print("I am adding ground")
+        
 
         ping2 = int(time.time())
 
