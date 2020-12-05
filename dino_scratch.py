@@ -95,6 +95,12 @@ class Dino_Game(arcade.Window):
 
         arcade.draw_text(life_text, 10 + self.view_left, 40 + self.view_bottom,
                          arcade.csscolor.BLACK, 18)
+        for x in range(self.player_sprite.get_lives()):
+            arcade.draw_polygon_filled([[20*x + self.view_left+10,self.view_bottom+450],[20*x + self.view_left+1,self.view_bottom+459],[20*x + self.view_left+2,self.view_bottom+462],
+            [20*x + self.view_left+5,self.view_bottom+464],[20*x + self.view_left+8,self.view_bottom+464],[20*x + self.view_left+10,self.view_bottom+461],
+            [20*x + self.view_left+12,self.view_bottom+464],[20*x + self.view_left+15,self.view_bottom+464],[20*x + self.view_left+18,self.view_bottom+462],
+            [20*x + self.view_left+19,self.view_bottom+459]], (255,0,0))
+
 
     def on_key_press(self, key, modifiers):
         """Called whenever a key is pressed. """
