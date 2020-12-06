@@ -17,12 +17,14 @@ LEFT_VIEWPORT_MARGIN = 250
 RIGHT_VIEWPORT_MARGIN = SCREEN_WIDTH - LEFT_VIEWPORT_MARGIN + 1
 BOTTOM_VIEWPORT_MARGIN = 50
 TOP_VIEWPORT_MARGIN = 100
-NUM_LIVES = 5
+NUM_LIVES = 20
 PLAYER_START = 0
+SUPER_JUMP_DURATION = 15
 
 # Movement speed of player, in pixels per frame
 PLAYER_MOVEMENT_SPEED = 12
 PLAYER_JUMP_SPEED = 18
+SUPER_JUMP_SPEED = 16
 
 
 class Dino_Game(arcade.Window):
@@ -38,6 +40,7 @@ class Dino_Game(arcade.Window):
         self.score = 0
         self.reference_time = int(time.time())
         self.reference_time2 = int(time.time())
+        self.super_jump_time = 0
 
         self.wall_list = arcade.SpriteList() #TODO: Create a class for this
         self.obstacle_list = arcade.SpriteList() #TODO: Create a class for this
@@ -49,9 +52,16 @@ class Dino_Game(arcade.Window):
         self.update_rate = UPDATE_RATE
         self._background_color = (arcade.csscolor.CORNFLOWER_BLUE)
 
+        
+        self.background_sound = arcade.load_sound("Sounds/funkyrobot.mp3")
+        self.obstacle_sound = arcade.load_sound("Sounds/hurt2.wav")
+        self.extra_jump_sound = arcade.load_sound("Sounds/power_up_01.ogg")
+
+        arcade.play_sound(self.background_sound, 0.35)
+
         # Create the ground
         # This shows using a loop to place multiple sprites horizontally
-        for x in range(0, 1000, 25):
+        for x in range(0, 1026, 25):
             wall = Ground()
             wall.set_position(x, 32)
             self.wall_list.append(wall)
@@ -83,25 +93,23 @@ class Dino_Game(arcade.Window):
         self.power_up_list.draw()
 
 
-        self.power_up_sounds = [arcade.load_sound("Sounds/power_up_01.ogg"),
-         arcade.load_sound("Sounds/power_up_02.ogg"), arcade.load_sound("Sounds/power_up_03.ogg")]
-        # self.background_sound = arcade.load_sound("Sounds/Dream_Raid_Part_III.mp3")
-        self.jump_sound = arcade.load_sound("Sounds/jump_2.ogg")
-        self.obstacle_sound = arcade.load_sound("Sounds/retro_explosion_01.ogg")
-
         if self.player_sprite.get_lives() == 0:
-            arcade.draw_text("YOU LOSE!", SCREEN_WIDTH / 2 + self.view_left, SCREEN_HEIGHT / 2 + self.view_bottom, arcade.csscolor.RED, 75, width=500, align="center")
+            arcade.draw_text("Game Over!", SCREEN_WIDTH / 2 + self.view_left, SCREEN_HEIGHT / 2 + self.view_bottom, arcade.csscolor.RED, 75, width=500, align="center")
         
         else:
             self.score = self.player_sprite.get_score()
 
         score_text = f"Score: {self.score}"
-        life_text = f"Lives: {self.player_sprite.get_lives()}"
+
         arcade.draw_text(score_text, 10 + self.view_left, 10 + self.view_bottom,
                          arcade.csscolor.BLACK, 18)
 
-        arcade.draw_text(life_text, 10 + self.view_left, 40 + self.view_bottom,
-                         arcade.csscolor.BLACK, 18)
+        if self.super_jump_time > 0:
+
+            super_jump_text = f"Super Jump Time: {self.super_jump_time - int(time.time())}"
+
+            arcade.draw_text(super_jump_text, 10 + self.view_left, 40 + self.view_bottom, arcade.csscolor.BLACK, 18)
+
         for x in range(self.player_sprite.get_lives()):
             arcade.draw_polygon_filled([[20*x + self.view_left+10,self.view_bottom+450],[20*x + self.view_left+1,self.view_bottom+459],[20*x + self.view_left+2,self.view_bottom+462],
             [20*x + self.view_left+5,self.view_bottom+464],[20*x + self.view_left+8,self.view_bottom+464],[20*x + self.view_left+10,self.view_bottom+461],
@@ -115,9 +123,12 @@ class Dino_Game(arcade.Window):
         
         
         if key == arcade.key.UP or key == arcade.key.W or key == arcade.key.SPACE:
-            if self.physics_engine.can_jump():
-                self.player_sprite.jump(PLAYER_JUMP_SPEED)
-                arcade.play_sound(self.jump_sound)
+            if self.physics_engine.can_jump(20):
+                if self.physics_engine.jumps_since_ground > 0:
+                    self.player_sprite.jump(SUPER_JUMP_SPEED, True)
+                else:
+                    self.player_sprite.jump(PLAYER_JUMP_SPEED)
+                self.physics_engine.increment_jump_counter()
         
 
     # def on_key_release(self, key, modifiers):
@@ -146,32 +157,38 @@ class Dino_Game(arcade.Window):
             new_y_position = self.wall_list[-1].get_y_position() + random.randint(33, 175)
             new_obstacle.set_position(new_x_position, new_y_position)
             self.obstacle_list.append(new_obstacle)
-            arcade.play_sound(self.obstacle_sound)
+            if self.player_sprite.get_lives() > 0:
+                arcade.play_sound(self.obstacle_sound)
 
         if len(obstacle_hits) > 0 and self.player_sprite.get_lives() > 0:
             self.player_sprite.subtract_life()
 
+        if self.super_jump_time == int(time.time()):
+            self.physics_engine.disable_multi_jump()
+            self.super_jump_time = 0
 
         if self.player_sprite.get_lives() == 0:
             self._background_color = (arcade.csscolor.ORANGE)
-            #arcade.pause(5)
-            #print("You LOSE!")
-            #arcade.close_window()
 
         
         power_ups_collected = arcade.check_for_collision_with_list(self.player_sprite, self.power_up_list)
 
-        for power_up in power_ups_collected:
-            # Remove the coin
-            power_up.remove_from_sprite_lists()
-            if power_up.get_id() == 2 and self.player_sprite.get_lives() > 0:
-                self.player_sprite.add_life(random.randint(1, 3))
-            elif power_up.get_id() == 3:
-                self.player_sprite.add_bonus(1000)
-            arcade.play_sound(self.power_up_sounds[random.randint(0,len(self.power_up_sounds) -1 )])
-
-            # Play a sound
-            #arcade.play_sound(self.collect_coin_sound)
+        if self.player_sprite.get_lives() > 0:
+            for power_up in power_ups_collected:
+                # Remove the power up item
+                power_up.remove_from_sprite_lists()
+                if power_up.get_id() == 2:
+                    self.player_sprite.add_life(random.randint(1, 3))
+                elif power_up.get_id() == 3:
+                    self.player_sprite.add_bonus(1000)
+                elif power_up.get_id() == 4:
+                    # Enable double jump for some time
+                    self.physics_engine.enable_multi_jump(2)
+                    if self.super_jump_time > 0:
+                        self.super_jump_time += int(0.8 * SUPER_JUMP_DURATION)
+                    else:
+                        self.super_jump_time = int(time.time()) + SUPER_JUMP_DURATION
+                    arcade.play_sound(self.extra_jump_sound)
 
         #print(f"Num obstacles remaining: {len(obstacle_list)}")
 
@@ -224,7 +241,7 @@ class Dino_Game(arcade.Window):
 
         # Adds obstacles and deletes them as they leave the screen.
         for i in range(len(self.obstacle_list)):
-            if self.obstacle_list[i].get_x_position() < self.view_left:
+            if self.obstacle_list[i].get_x_position() < self.view_left - 15:
                 self.obstacle_list.pop(i)
                 new_obstacle = Obstacle()
                 new_x_position = self.obstacle_list[-1].get_x_position() + random.randint(300, 400)
@@ -233,11 +250,14 @@ class Dino_Game(arcade.Window):
                 self.obstacle_list.append(new_obstacle)
                 #print("I am adding obstacles")
 
-        
+        # Remove power ups that have left the screen
+        for i in range(len(self.power_up_list)):
+            if self.power_up_list[i].get_x_position() < self.view_left - 15:
+                self.power_up_list.pop(i)
 
         # Adds ground and deletes them as they leave the screen.
         for i in range(len(self.wall_list)):
-            if self.wall_list[i].get_x_position() < self.view_left:
+            if self.wall_list[i].get_x_position() < self.view_left - 15:
                 self.wall_list.pop(i)
                 new_wall = Ground()
 
@@ -262,8 +282,8 @@ class Dino_Game(arcade.Window):
         ping2 = int(time.time())
 
         if ping2 - self.reference_time2 == (2 * LUCK):
-            power_up_id = random.randint(2, 3)
-            image_names = ["Life.png", "Coin.png"]
+            power_up_id = random.randint(2, 4)
+            image_names = ["Life.png", "Coin.png", "SuperJump.png"]
             power_up = Power_Up(power_up_id, image_names[power_up_id - 2])
             altitude = self.wall_list[-1].get_y_position() + random.randint(35, 70)
             power_up.set_position(self.wall_list[-1].get_x_position(), altitude)
@@ -273,7 +293,7 @@ class Dino_Game(arcade.Window):
 
 
 class Player(arcade.Sprite):
-    #Player class is responsible for creating the player.
+    #Player class is responsible for creating the player and keeping track of its life and score.
     
     def __init__(self):
         super().__init__("redbox.png")
@@ -283,29 +303,46 @@ class Player(arcade.Sprite):
         self.center_x = PLAYER_START
         self.center_y = 100
         self._life_count = NUM_LIVES
+        self.num_jumps = 0
         self._score_bonus = 0
+        self.die_sound = arcade.load_sound("Sounds/lose5.wav")
+        self.jump_sound = arcade.load_sound("Sounds/jump_2.ogg")
+        self.super_jump_sound = arcade.load_sound("Sounds/laser1.mp3")
+        self.power_up_sounds = [arcade.load_sound("Sounds/power_up_01.ogg"),
+         arcade.load_sound("Sounds/power_up_02.ogg"), arcade.load_sound("Sounds/power_up_03.ogg")]
+        self.coin_sound = arcade.load_sound("Sounds/retro_coin_01.ogg")
 
     def set_position(self, location_x, location_y):
         self.center_x = location_x
         self.center_y = location_y
 
-    def jump(self, jump_speed):
-        self.change_y = jump_speed
+    def jump(self, jump_speed, second_jump = False):
+        if second_jump:
+            self.change_y = jump_speed
+            arcade.play_sound(self.super_jump_sound)
+        else:
+            self.change_y = jump_speed
+            arcade.play_sound(self.jump_sound)
 
     def get_lives(self):
         return self._life_count
 
     def subtract_life(self):
         self._life_count -= 1
+        if self._life_count == 0:
+            arcade.play_sound(self.die_sound)
 
     def add_life(self, added_life = 1):
         self._life_count += added_life
+        arcade.play_sound(self.power_up_sounds[2])
 
     def add_bonus(self, bonus = 0):
         self._score_bonus += bonus
+        if self._life_count > 0:
+            arcade.play_sound(self.coin_sound)
 
     def get_score(self):
-        return int((self.center_x - PLAYER_START) / 4) + self._score_bonus
+        return int((self.center_x - PLAYER_START) / 10) + self._score_bonus
 
 
 
