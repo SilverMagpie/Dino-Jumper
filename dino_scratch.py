@@ -17,14 +17,14 @@ LEFT_VIEWPORT_MARGIN = 250
 RIGHT_VIEWPORT_MARGIN = SCREEN_WIDTH - LEFT_VIEWPORT_MARGIN + 1
 BOTTOM_VIEWPORT_MARGIN = 50
 TOP_VIEWPORT_MARGIN = 100
-NUM_LIVES = 20
+NUM_LIVES = 6
 PLAYER_START = 0
 SUPER_JUMP_DURATION = 15
 
 # Movement speed of player, in pixels per frame
 PLAYER_MOVEMENT_SPEED = 12
 PLAYER_JUMP_SPEED = 18
-SUPER_JUMP_SPEED = 16
+SUPER_JUMP_SPEED = 19
 
 
 class Dino_Game(arcade.Window):
@@ -45,10 +45,11 @@ class Dino_Game(arcade.Window):
         self.wall_list = arcade.SpriteList() #TODO: Create a class for this
         self.obstacle_list = arcade.SpriteList() #TODO: Create a class for this
         self.power_up_list = arcade.SpriteList()
+        self.cloud_list = arcade.SpriteList()
         self.player_sprite = Player()
         self.width = SCREEN_WIDTH
         self.height = SCREEN_HEIGHT
-        self.title = "Hardcore Dino"
+        self.title = "Parkour Dino"
         self.update_rate = UPDATE_RATE
         self._background_color = (arcade.csscolor.CORNFLOWER_BLUE)
 
@@ -57,7 +58,7 @@ class Dino_Game(arcade.Window):
         self.obstacle_sound = arcade.load_sound("Sounds/hurt2.wav")
         self.extra_jump_sound = arcade.load_sound("Sounds/power_up_01.ogg")
 
-        arcade.play_sound(self.background_sound, 0.35)
+        arcade.play_sound(self.background_sound, 0.3)
 
         # Create the ground
         # This shows using a loop to place multiple sprites horizontally
@@ -65,15 +66,20 @@ class Dino_Game(arcade.Window):
             wall = Ground()
             wall.set_position(x, 32)
             self.wall_list.append(wall)
-
         
         x = 0
-        for i in range(6):
+        for i in range(5):
             x += random.randint(250, 400)
             #create_obstacle = random.randint()
-            obstacle = Obstacle()
-            obstacle.set_position(x, 32 + random.randint(38, 150))
-            self.obstacle_list.append(obstacle)
+            if i < 4:
+                obstacle = Obstacle()
+                obstacle.set_position(x, 32 + random.randint(38, 150))
+                self.obstacle_list.append(obstacle)
+
+            cloud = Cloud()
+            cloud.set_position(x + random.randint(20, 100), 32 + random.randint(200, 450))
+            self.cloud_list.append(cloud)
+            cloud = Cloud("StormCloud1.png") # Included to speed up loading time
 
         self.player_list = arcade.SpriteList() #TODO: Create a class for this
         self.player_list.append(self.player_sprite)
@@ -87,10 +93,11 @@ class Dino_Game(arcade.Window):
         arcade.start_render()
 
         # Draw our sprites
-        self.wall_list.draw()
         self.obstacle_list.draw()
-        self.player_list.draw()
+        self.wall_list.draw()
         self.power_up_list.draw()
+        self.player_list.draw()
+        self.cloud_list.draw()
 
 
         if self.player_sprite.get_lives() == 0:
@@ -129,15 +136,7 @@ class Dino_Game(arcade.Window):
                 else:
                     self.player_sprite.jump(PLAYER_JUMP_SPEED)
                 self.physics_engine.increment_jump_counter()
-        
 
-    # def on_key_release(self, key, modifiers):
-        """Called when the user releases a key. """
-
-        '''if key == arcade.key.LEFT or key == arcade.key.A:
-            self.player_sprite.change_x = 0
-        elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player_sprite.change_x = 0'''
 
     def on_update(self, delta_time):
         """ Movement and game logic """
@@ -168,7 +167,7 @@ class Dino_Game(arcade.Window):
             self.super_jump_time = 0
 
         if self.player_sprite.get_lives() == 0:
-            self._background_color = (arcade.csscolor.ORANGE)
+            self._background_color = (arcade.csscolor.DARK_GRAY)
 
         
         power_ups_collected = arcade.check_for_collision_with_list(self.player_sprite, self.power_up_list)
@@ -193,6 +192,20 @@ class Dino_Game(arcade.Window):
         #print(f"Num obstacles remaining: {len(obstacle_list)}")
 
         self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
+
+        # Remove clouds as the leave the screen, then add more
+        for s in range(len(self.cloud_list)):
+            self.cloud_list[s].change_x = PLAYER_MOVEMENT_SPEED
+            if self.cloud_list[s].get_x_position() < self.view_left - 75:
+                self.cloud_list.pop(s)
+                if self.player_sprite.get_lives() == 0:
+                    new_cloud = Cloud("StormCloud1.png", 0.1)
+                else:
+                    new_cloud = Cloud()
+                new_x_position = self.cloud_list[-1].get_x_position() + random.randint(90, 700)
+                new_y_position = self.wall_list[-1].get_y_position() + random.randint(200, 450)
+                new_cloud.set_position(new_x_position, new_y_position)
+                self.cloud_list.append(new_cloud)
 
         # Move the player with the physics engine
         self.physics_engine.update()
@@ -277,8 +290,10 @@ class Dino_Game(arcade.Window):
                 new_wall.set_position(x_pos, y_pos)
                 self.wall_list.append(new_wall)
                 #print("I am adding ground")
+
         
 
+        # Generate random power-ups
         ping2 = int(time.time())
 
         if ping2 - self.reference_time2 == (2 * LUCK):
@@ -296,14 +311,13 @@ class Player(arcade.Sprite):
     #Player class is responsible for creating the player and keeping track of its life and score.
     
     def __init__(self):
-        super().__init__("redbox.png")
+        super().__init__("T_Rex0.png", 0.07)
 
         self.change_x = 0
         self.change_y = 0
         self.center_x = PLAYER_START
         self.center_y = 100
         self._life_count = NUM_LIVES
-        self.num_jumps = 0
         self._score_bonus = 0
         self.die_sound = arcade.load_sound("Sounds/lose5.wav")
         self.jump_sound = arcade.load_sound("Sounds/jump_2.ogg")
@@ -319,7 +333,7 @@ class Player(arcade.Sprite):
     def jump(self, jump_speed, second_jump = False):
         if second_jump:
             self.change_y = jump_speed
-            arcade.play_sound(self.super_jump_sound)
+            arcade.play_sound(self.super_jump_sound, 1.5)
         else:
             self.change_y = jump_speed
             arcade.play_sound(self.jump_sound)
@@ -372,8 +386,8 @@ class Ground(arcade.Sprite):
 
 
 class Obstacle(arcade.Sprite):
-    def __init__(self):
-        super().__init__("obstacle.png")
+    def __init__(self, image_name_in = "boxCrate_single.png", scale = 0.45):
+        super().__init__(image_name_in, scale)
         #self.boundary_top = None
         self.change_x = GAME_SPEED
         self.change_y = 0
@@ -414,6 +428,28 @@ class Power_Up(arcade.Sprite):
 
     def get_x_position(self):
         return self.center_x
+
+class Cloud(arcade.Sprite):
+    def __init__(self, image_name_in = "Cloud1.png", scale_in = 0.1):
+        super().__init__(image_name_in, scale_in)
+        #self.boundary_top = None
+        self.change_x = int(PLAYER_MOVEMENT_SPEED)
+        self.change_y = 0
+        self.center_x = 10
+        self.center_y = 10
+
+    def set_position(self, location_x, location_y):
+        self.center_x = location_x
+        self.center_y = location_y
+
+    def set_id(self, new_id = 1):
+        self._id = new_id
+
+    def get_x_position(self):
+        return self.center_x
+
+    def set_speed(self, speed_in = PLAYER_MOVEMENT_SPEED):
+        self.change_x = speed_in
 
 
 if __name__ == "__main__":
