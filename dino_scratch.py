@@ -36,25 +36,13 @@ class Dino_Game(arcade.Window):
 
         self.view_bottom = 0
         self.view_left = 0
-        self.count_collisions = 0
         self._direction = 1
         self.score = 0
-        self.reference_time = int(time.time())
-        self.reference_time2 = int(time.time())
-        self.super_jump_time = 0
-        self.start_game = False
-        self.pause = True
 
-        self.wall_list = arcade.SpriteList() #TODO: Create a class for this
-        self.obstacle_list = arcade.SpriteList() #TODO: Create a class for this
-        self.power_up_list = arcade.SpriteList()
-        self.cloud_list = arcade.SpriteList()
-        self.player_sprite = Player()
         self.width = SCREEN_WIDTH
         self.height = SCREEN_HEIGHT
         self.title = "Parkour Dino"
         self.update_rate = UPDATE_RATE
-        self._background_color = (arcade.csscolor.CORNFLOWER_BLUE)
         self._obstacle_images = ["Dragon1.png", "Dragon2.png", "Dragon3.png", "enemy_boss.png"]
 
         
@@ -63,6 +51,25 @@ class Dino_Game(arcade.Window):
         self.extra_jump_sound = arcade.load_sound("Sounds/power_up_01.ogg")
 
         #arcade.play_sound(self.background_sound, 0.3)
+        self.setup()
+
+    def setup(self):
+        """ Set up the game here. Call this function to restart the game. """
+        self._background_color = (arcade.csscolor.CORNFLOWER_BLUE)
+        self.previous_score = self.score
+        self.score = 0
+        self.count_collisions = 0
+        self.reference_time = int(time.time())
+        self.reference_time2 = int(time.time())
+        self.super_jump_time = 0
+        self.start_game = False
+        self.pause = True
+
+        self.player_sprite = Player()
+        self.wall_list = arcade.SpriteList() #TODO: Create a class for this
+        self.obstacle_list = arcade.SpriteList() #TODO: Create a class for this
+        self.power_up_list = arcade.SpriteList()
+        self.cloud_list = arcade.SpriteList()
 
         # Create the ground
         # This shows using a loop to place multiple sprites horizontally
@@ -114,21 +121,27 @@ class Dino_Game(arcade.Window):
             self.pause = False
             self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
 
+        if self.previous_score > 0 and self.player_sprite.get_lives == 0:
+            previous_score_text = f". Previous Score: {self.previous_score}"
+
+        else:
+            previous_score_text = ""
+
         if self.player_sprite.get_lives() == 0:
             arcade.draw_text("Game Over!", SCREEN_WIDTH / 2 + self.view_left, SCREEN_HEIGHT / 2 + self.view_bottom, arcade.csscolor.RED, 75, width=500, align="center")
-            arcade.draw_text("Press \"R\" to restart (Doesn't work yet)", 550 + self.view_left, 10 + self.view_bottom, arcade.csscolor.ORANGE, 30)
+            arcade.draw_text("Press \"R\" to restart", 550 + self.view_left, 10 + self.view_bottom, arcade.csscolor.ORANGE, 30)
+
+            self._score_text = f"Score: {self.score}{previous_score_text}"
+
             if self.player_sprite.get_num_textures() < 2:
                 self.player_sprite.change_image()
-            
-            
         
         else:
             self.score = self.player_sprite.get_score()
+            self._score_text = f"Score: {self.score}{previous_score_text}"
 
-        score_text = f"Score: {self.score}"
 
-        arcade.draw_text(score_text, 10 + self.view_left, 10 + self.view_bottom,
-                         arcade.csscolor.BLACK, 18)
+        arcade.draw_text(self._score_text, 10 + self.view_left, 10 + self.view_bottom, arcade.csscolor.BLACK, 18)
 
         if self.super_jump_time > 0:
 
@@ -159,7 +172,7 @@ class Dino_Game(arcade.Window):
                     self.player_sprite.jump(PLAYER_JUMP_SPEED)
                 self.physics_engine.increment_jump_counter()
         elif key == arcade.key.R and self.player_sprite.get_lives() == 0:
-            self.__init__()
+            self.setup()
 
 
     def on_update(self, delta_time):
