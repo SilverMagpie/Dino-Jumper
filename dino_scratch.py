@@ -1,6 +1,6 @@
 # Name: Daniel Uchytil, Spencer Warner, Alex Smith, Matthew Larson.
 # About: This is a platforming game where the player is required to jump over
-# obstacles as they approach the player. Hit any obstacle and you are dead.
+# obstacles as they approach the player. Hit a certain number of obstacles and you are dead.
 
 import arcade
 import random
@@ -58,7 +58,7 @@ class Dino_Game(arcade.Window):
         self.obstacle_sound = arcade.load_sound("Sounds/hurt2.wav")
         self.extra_jump_sound = arcade.load_sound("Sounds/power_up_01.ogg")
 
-        arcade.play_sound(self.background_sound, 0.3)
+        #arcade.play_sound(self.background_sound, 0.3)
 
         # Create the ground
         # This shows using a loop to place multiple sprites horizontally
@@ -68,7 +68,7 @@ class Dino_Game(arcade.Window):
             self.wall_list.append(wall)
         
         x = 0
-        for i in range(5):
+        for i in range(6):
             x += random.randint(250, 400)
             #create_obstacle = random.randint()
             if i < 4:
@@ -102,6 +102,8 @@ class Dino_Game(arcade.Window):
 
         if self.player_sprite.get_lives() == 0:
             arcade.draw_text("Game Over!", SCREEN_WIDTH / 2 + self.view_left, SCREEN_HEIGHT / 2 + self.view_bottom, arcade.csscolor.RED, 75, width=500, align="center")
+            if self.player_sprite.get_num_textures() < 2:
+                self.player_sprite.change_image("T_Rex_Dead2.png")
         
         else:
             self.score = self.player_sprite.get_score()
@@ -157,7 +159,7 @@ class Dino_Game(arcade.Window):
             new_obstacle.set_position(new_x_position, new_y_position)
             self.obstacle_list.append(new_obstacle)
             if self.player_sprite.get_lives() > 0:
-                arcade.play_sound(self.obstacle_sound)
+                arcade.play_sound(self.obstacle_sound, 0.4)
 
         if len(obstacle_hits) > 0 and self.player_sprite.get_lives() > 0:
             self.player_sprite.subtract_life()
@@ -187,7 +189,7 @@ class Dino_Game(arcade.Window):
                         self.super_jump_time += int(0.8 * SUPER_JUMP_DURATION)
                     else:
                         self.super_jump_time = int(time.time()) + SUPER_JUMP_DURATION
-                    arcade.play_sound(self.extra_jump_sound)
+                    arcade.play_sound(self.extra_jump_sound, 0.4)
 
         #print(f"Num obstacles remaining: {len(obstacle_list)}")
 
@@ -203,7 +205,7 @@ class Dino_Game(arcade.Window):
                 else:
                     new_cloud = Cloud()
                 new_x_position = self.cloud_list[-1].get_x_position() + random.randint(90, 700)
-                new_y_position = self.wall_list[-1].get_y_position() + random.randint(200, 450)
+                new_y_position = self.wall_list[-1].get_y_position() + random.randint(200, 400)
                 new_cloud.set_position(new_x_position, new_y_position)
                 self.cloud_list.append(new_cloud)
 
@@ -333,10 +335,10 @@ class Player(arcade.Sprite):
     def jump(self, jump_speed, second_jump = False):
         if second_jump:
             self.change_y = jump_speed
-            arcade.play_sound(self.super_jump_sound, 1.5)
+            arcade.play_sound(self.super_jump_sound, 1.1)
         else:
             self.change_y = jump_speed
-            arcade.play_sound(self.jump_sound)
+            arcade.play_sound(self.jump_sound, 0.4)
 
     def get_lives(self):
         return self._life_count
@@ -344,20 +346,28 @@ class Player(arcade.Sprite):
     def subtract_life(self):
         self._life_count -= 1
         if self._life_count == 0:
-            arcade.play_sound(self.die_sound)
+            arcade.play_sound(self.die_sound, 0.7)
 
     def add_life(self, added_life = 1):
         self._life_count += added_life
-        arcade.play_sound(self.power_up_sounds[2])
+        arcade.play_sound(self.power_up_sounds[2], 0.4)
 
     def add_bonus(self, bonus = 0):
         self._score_bonus += bonus
         if self._life_count > 0:
-            arcade.play_sound(self.coin_sound)
+            arcade.play_sound(self.coin_sound, 0.3)
 
     def get_score(self):
         return int((self.center_x - PLAYER_START) / 10) + self._score_bonus
 
+    def change_image(self, image_in = "T_Rex_Dead.png"):
+        self._new_texture = arcade.load_texture(image_in)
+        self.append_texture(self._new_texture)
+        self.set_texture(1)
+
+    def get_num_textures(self):
+        return len(self.textures)
+        
 
 
 class Ground(arcade.Sprite):
