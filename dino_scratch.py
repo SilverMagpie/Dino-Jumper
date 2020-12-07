@@ -55,6 +55,7 @@ class Dino_Game(arcade.Window):
         self.title = "Parkour Dino"
         self.update_rate = UPDATE_RATE
         self._background_color = (arcade.csscolor.CORNFLOWER_BLUE)
+        self._obstacle_images = ["Dragon1.png", "Dragon2.png", "Dragon3.png", "enemy_boss.png"]
 
         
         self.background_sound = arcade.load_sound("Sounds/funkyrobot.mp3")
@@ -75,7 +76,7 @@ class Dino_Game(arcade.Window):
             x += random.randint(250, 400)
             #create_obstacle = random.randint()
             if i < 4:
-                obstacle = Obstacle()
+                obstacle = Obstacle(self._obstacle_images[random.randint(0, len(self._obstacle_images) - 1)])
                 obstacle.set_position(x, 32 + random.randint(38, 150))
                 self.obstacle_list.append(obstacle)
 
@@ -172,7 +173,7 @@ class Dino_Game(arcade.Window):
         for obstacle in obstacle_hits:
             # Remove the coin
             obstacle.remove_from_sprite_lists()
-            new_obstacle = Obstacle()
+            new_obstacle = Obstacle(self._obstacle_images[random.randint(0, len(self._obstacle_images) - 1)])
             new_x_position = self.obstacle_list[-1].get_x_position() + random.randint(300, 400)
             new_y_position = self.wall_list[-1].get_y_position() + random.randint(33, 175)
             new_obstacle.set_position(new_x_position, new_y_position)
@@ -278,7 +279,7 @@ class Dino_Game(arcade.Window):
         for i in range(len(self.obstacle_list)):
             if self.obstacle_list[i].get_x_position() < self.view_left - 15:
                 self.obstacle_list.pop(i)
-                new_obstacle = Obstacle()
+                new_obstacle = Obstacle(self._obstacle_images[random.randint(0, len(self._obstacle_images) - 1)])
                 new_x_position = self.obstacle_list[-1].get_x_position() + random.randint(300, 400)
                 new_y_position = self.wall_list[-1].get_y_position() + random.randint(45, 150)
                 new_obstacle.set_position(new_x_position, new_y_position)
@@ -420,7 +421,7 @@ class Ground(arcade.Sprite):
 
 
 class Obstacle(arcade.Sprite):
-    def __init__(self, image_name_in = "boxCrate_single.png", scale = 0.45):
+    def __init__(self, image_name_in = "Dragon2.png", scale = 0.45):
         super().__init__(image_name_in, scale)
         #self.boundary_top = None
         self.change_x = GAME_SPEED
