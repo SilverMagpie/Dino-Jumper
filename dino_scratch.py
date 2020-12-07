@@ -20,6 +20,7 @@ TOP_VIEWPORT_MARGIN = 100
 NUM_LIVES = 6
 PLAYER_START = 0
 SUPER_JUMP_DURATION = 15
+PAUSE_TIME = 3
 
 # Movement speed of player, in pixels per frame
 PLAYER_MOVEMENT_SPEED = 12
@@ -41,6 +42,8 @@ class Dino_Game(arcade.Window):
         self.reference_time = int(time.time())
         self.reference_time2 = int(time.time())
         self.super_jump_time = 0
+        self.start_game = False
+        self.pause = True
 
         self.wall_list = arcade.SpriteList() #TODO: Create a class for this
         self.obstacle_list = arcade.SpriteList() #TODO: Create a class for this
@@ -68,7 +71,7 @@ class Dino_Game(arcade.Window):
             self.wall_list.append(wall)
         
         x = 0
-        for i in range(6):
+        for i in range(5):
             x += random.randint(250, 400)
             #create_obstacle = random.randint()
             if i < 4:
@@ -99,11 +102,24 @@ class Dino_Game(arcade.Window):
         self.player_list.draw()
         self.cloud_list.draw()
 
+        if not(self.start_game):
+            arcade.draw_text("Press SPACE to start", SCREEN_WIDTH / 2 + self.view_left, SCREEN_HEIGHT / 2 + self.view_bottom, arcade.csscolor.ORANGE_RED, 40, width=500, align="center")
+            self.player_sprite.change_x = 0
+            self.reference_time = int(time.time())
+        elif self.pause and self.reference_time + PAUSE_TIME >= int(time.time()):
+            arcade.draw_text(f"Starting in {self.reference_time + PAUSE_TIME - int(time.time())}", SCREEN_WIDTH / 2 + self.view_left, SCREEN_HEIGHT / 2 + self.view_bottom, arcade.csscolor.ORANGE_RED, 40, width=500, align="center")
+            self.player_sprite.change_x = 0
+        else:
+            self.pause = False
+            self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
 
         if self.player_sprite.get_lives() == 0:
             arcade.draw_text("Game Over!", SCREEN_WIDTH / 2 + self.view_left, SCREEN_HEIGHT / 2 + self.view_bottom, arcade.csscolor.RED, 75, width=500, align="center")
+            arcade.draw_text("Press \"R\" to restart (Doesn't work yet)", 550 + self.view_left, 10 + self.view_bottom, arcade.csscolor.ORANGE, 30)
             if self.player_sprite.get_num_textures() < 2:
-                self.player_sprite.change_image("T_Rex_Dead2.png")
+                self.player_sprite.change_image()
+            
+            
         
         else:
             self.score = self.player_sprite.get_score()
@@ -125,6 +141,7 @@ class Dino_Game(arcade.Window):
             [20*x + self.view_left+12,self.view_bottom+464],[20*x + self.view_left+15,self.view_bottom+464],[20*x + self.view_left+18,self.view_bottom+462],
             [20*x + self.view_left+19,self.view_bottom+459]], (255,0,0))
 
+
         
 
     def on_key_press(self, key, modifiers):
@@ -132,18 +149,20 @@ class Dino_Game(arcade.Window):
         
         
         if key == arcade.key.UP or key == arcade.key.W or key == arcade.key.SPACE:
-            if self.physics_engine.can_jump(20):
+            if not(self.start_game):
+                self.start_game = True
+            elif self.physics_engine.can_jump(20):
                 if self.physics_engine.jumps_since_ground > 0:
                     self.player_sprite.jump(SUPER_JUMP_SPEED, True)
                 else:
                     self.player_sprite.jump(PLAYER_JUMP_SPEED)
                 self.physics_engine.increment_jump_counter()
+        elif key == arcade.key.R and self.player_sprite.get_lives() == 0:
+            self.__init__()
 
 
     def on_update(self, delta_time):
         """ Movement and game logic """
-
-        
 
         obstacle_hits = arcade.check_for_collision_with_list(self.player_sprite, self.obstacle_list)
         # print(obstacle_hits)
@@ -193,7 +212,8 @@ class Dino_Game(arcade.Window):
 
         #print(f"Num obstacles remaining: {len(obstacle_list)}")
 
-        self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
+        if not(self.pause):
+            self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
 
         # Remove clouds as the leave the screen, then add more
         for s in range(len(self.cloud_list)):
@@ -304,7 +324,8 @@ class Dino_Game(arcade.Window):
             power_up = Power_Up(power_up_id, image_names[power_up_id - 2])
             altitude = self.wall_list[-1].get_y_position() + random.randint(35, 70)
             power_up.set_position(self.wall_list[-1].get_x_position(), altitude)
-            self.power_up_list.append(power_up)
+            if self.player_sprite.change_x > 0:
+                self.power_up_list.append(power_up)
             self.reference_time2 = ping2
 
 
@@ -360,13 +381,16 @@ class Player(arcade.Sprite):
     def get_score(self):
         return int((self.center_x - PLAYER_START) / 10) + self._score_bonus
 
-    def change_image(self, image_in = "T_Rex_Dead.png"):
+    def change_image(self, image_in = "T_Rex_Dead0.png"):
         self._new_texture = arcade.load_texture(image_in)
         self.append_texture(self._new_texture)
         self.set_texture(1)
 
     def get_num_textures(self):
         return len(self.textures)
+
+    def get_x_position(self):
+        return self._get_center_x()
         
 
 
