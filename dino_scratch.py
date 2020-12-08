@@ -10,7 +10,7 @@ import time
 LUCK = 4
 GAME_SPEED = 0
 SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 500
+SCREEN_HEIGHT = 600
 UPDATE_RATE = 1 / 60
 GRAVITY = 1
 LEFT_VIEWPORT_MARGIN = 250
@@ -23,7 +23,7 @@ SUPER_JUMP_DURATION = 15
 PAUSE_TIME = 3
 
 # Movement speed of player, in pixels per frame
-PLAYER_MOVEMENT_SPEED = 12
+PLAYER_MOVEMENT_SPEED = 11
 PLAYER_JUMP_SPEED = 18
 SUPER_JUMP_SPEED = 19
 
@@ -32,16 +32,12 @@ class Dino_Game(arcade.Window):
     #Acts as a controller. Determines how the game is played.
     #Sets up the screen
     def __init__(self):
-        super().__init__()
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Parkour Dino")
 
         self.view_bottom = 0
         self.view_left = 0
         self._direction = 1
         self.score = 0
-
-        self.width = SCREEN_WIDTH
-        self.height = SCREEN_HEIGHT
-        self.title = "Parkour Dino"
         self.update_rate = UPDATE_RATE
         self._obstacle_images = ["Dragon1.png", "Dragon2.png", "Dragon3.png", "enemy_boss.png"]
 
@@ -121,27 +117,24 @@ class Dino_Game(arcade.Window):
             self.pause = False
             self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
 
-        if self.previous_score > 0 and self.player_sprite.get_lives == 0:
-            previous_score_text = f". Previous Score: {self.previous_score}"
-
-        else:
-            previous_score_text = ""
 
         if self.player_sprite.get_lives() == 0:
             arcade.draw_text("Game Over!", SCREEN_WIDTH / 2 + self.view_left, SCREEN_HEIGHT / 2 + self.view_bottom, arcade.csscolor.RED, 75, width=500, align="center")
-            arcade.draw_text("Press \"R\" to restart", 550 + self.view_left, 10 + self.view_bottom, arcade.csscolor.ORANGE, 30)
-
-            self._score_text = f"Score: {self.score}{previous_score_text}"
+            arcade.draw_text("Press \"R\" to restart", 600 + self.view_left, 10 + self.view_bottom, arcade.csscolor.RED, 30)
 
             if self.player_sprite.get_num_textures() < 2:
                 self.player_sprite.change_image()
         
         else:
             self.score = self.player_sprite.get_score()
-            self._score_text = f"Score: {self.score}{previous_score_text}"
 
+        if self.previous_score > 0 and self.player_sprite.get_lives() == 0:
+            self._score_text = f"Score: {self.score}.  Previous Score: {self.previous_score}"
 
-        arcade.draw_text(self._score_text, 10 + self.view_left, 10 + self.view_bottom, arcade.csscolor.BLACK, 18)
+        else:
+            self._score_text = f"Score: {self.score}"
+
+        arcade.draw_text(self._score_text, 10 + self.view_left, 10 + self.view_bottom, arcade.csscolor.BLACK, 20)
 
         if self.super_jump_time > 0:
 
@@ -149,11 +142,12 @@ class Dino_Game(arcade.Window):
 
             arcade.draw_text(super_jump_text, 10 + self.view_left, 40 + self.view_bottom, arcade.csscolor.BLACK, 18)
 
-        for x in range(self.player_sprite.get_lives()):
-            arcade.draw_polygon_filled([[20*x + self.view_left+10,self.view_bottom+450],[20*x + self.view_left+1,self.view_bottom+459],[20*x + self.view_left+2,self.view_bottom+462],
-            [20*x + self.view_left+5,self.view_bottom+464],[20*x + self.view_left+8,self.view_bottom+464],[20*x + self.view_left+10,self.view_bottom+461],
-            [20*x + self.view_left+12,self.view_bottom+464],[20*x + self.view_left+15,self.view_bottom+464],[20*x + self.view_left+18,self.view_bottom+462],
-            [20*x + self.view_left+19,self.view_bottom+459]], (255,0,0))
+        s = SCREEN_HEIGHT
+        for x in range(1, self.player_sprite.get_lives() + 1):
+            arcade.draw_polygon_filled([[20*x + self.view_left+10,self.view_bottom+s-50],[20*x + self.view_left+1,self.view_bottom+s-41],[20*x + self.view_left+2,self.view_bottom+s-38],
+            [20*x + self.view_left+5,self.view_bottom+s-36],[20*x + self.view_left+8,self.view_bottom+s-36],[20*x + self.view_left+10,self.view_bottom+s-39],
+            [20*x + self.view_left+12,self.view_bottom+s-36],[20*x + self.view_left+15,self.view_bottom+s-36],[20*x + self.view_left+18,self.view_bottom+s-38],
+            [20*x + self.view_left+19,self.view_bottom+s-41]], (255,0,0))
 
 
         
