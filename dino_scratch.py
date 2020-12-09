@@ -127,6 +127,7 @@ class Dino_Game(arcade.Window):
         
         else:
             self.score = self.player_sprite.get_score()
+            
 
         if self.previous_score > 0 and self.player_sprite.get_lives() == 0:
             self._score_text = f"Score: {self.score}.  Previous Score: {self.previous_score}"
@@ -399,6 +400,8 @@ class Player(arcade.Sprite):
 
     def get_x_position(self):
         return self._get_center_x()
+
+
         
 
 
