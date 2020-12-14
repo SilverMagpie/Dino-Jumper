@@ -12,6 +12,7 @@ pip3 install arcade
 Here are some alternate instructions if you get stuck: https://arcade.academy/installation_windows.html
 
 3. Download the files from our repository: https://github.com/SilverMagpie/Dino-Jumper
+Run Dino-scratch.py
 
 Authors: 
 Daniel Uchytil - uch16001@byui.edu
